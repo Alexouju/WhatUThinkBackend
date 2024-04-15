@@ -1,3 +1,4 @@
+import base64
 
 import bcrypt
 from flask import Flask, request, abort, jsonify, render_template
@@ -125,13 +126,33 @@ def insert_product():
 
     return jsonify({'message': 'Product inserted successfully'}), 200
 
+@app.route('/get-picture-url', methods=['GET'])
+def get_picture_url():
+    # Considering the image is stored under the 'static' folder and named 'uploaded_image.png'
+    image_url = request.url_root + 'static/uploaded_image.png'
+    return jsonify({'image_url': image_url}), 200
 
-# @app.route('/upload-image', methods=['POST'])
-# def upload_image():
-#     image = request.files['image']
-#     image_id = save_image(image)
-#     return str(image_id)
-#
+
+@app.route('/upload-picture', methods=['POST'])
+def upload_picture():
+    data = request.get_json()
+    if not data or 'picture' not in data:
+        return jsonify({'error': 'No picture data provided'}), 400
+
+    picture_data = data['picture']
+    try:
+        # Assume picture_data is a base64 encoded string without 'data:image/png;base64,' prefix
+        image_data = base64.b64decode(picture_data)
+    except base64.binascii.Error as e:
+        return jsonify({'error': 'Invalid base64 data'}), 400
+
+    # Here you would typically store this data in a more permanent storage solution
+    # For demo purposes, we'll save it to a file (this is not typically recommended for prod)
+    with open('static/uploaded_image.png', 'wb') as f:
+        f.write(image_data)
+
+    return jsonify({'message': 'Picture uploaded successfully'}), 200
+
 #
 # @app.route('/display-images')
 # def display_images():
