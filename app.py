@@ -111,7 +111,6 @@ def insert_product():
     if not name or not specifications or not description:
         return jsonify({'error': 'Incomplete product data'}), 400
 
-    # Create product document
     product_data = {
         u'name': name,
         u'specifications': specifications,
