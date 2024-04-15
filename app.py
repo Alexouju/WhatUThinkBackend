@@ -126,6 +126,14 @@ def insert_product():
 
     return jsonify({'message': 'Product inserted successfully'}), 200
 
+
+@app.route('/search-products', methods=['GET'])
+def search_products():
+    search_term = request.args.get('query', '')
+    products_query = db.collection(u'products').where(u'name', u'==', search_term).get()
+    products = [{product.id: product.to_dict()} for product in products_query]
+    return jsonify(products), 200
+
 @app.route('/get-picture-url', methods=['GET'])
 def get_picture_url():
     # Considering the image is stored under the 'static' folder and named 'uploaded_image.png'
