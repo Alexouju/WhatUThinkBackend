@@ -10,6 +10,7 @@ from Entities.User import User
 
 app = Flask(__name__)
 #5468
+#5468Nuoalekso
 cred = credentials.Certificate("static/pyproject-63c10-firebase-adminsdk-98zc9-532150f44b.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
