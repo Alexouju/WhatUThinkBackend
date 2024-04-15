@@ -14,7 +14,12 @@ class TestApp(unittest.TestCase):
     def tearDown(self):
         self.app_context.pop()
 
+    @patch('app.request')
 
+    def test_login_firebase(self, mock_request):
+        mock_request.form = {'username_or_email': 'test', 'password': 'test'}
+        response = self.app.post('/login')
+        self.assertEqual(response.status_code, 200)
 
 if __name__ == '__main__':
     unittest.main()
