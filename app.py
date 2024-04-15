@@ -1,6 +1,7 @@
 
 import bcrypt
 from flask import Flask, request, abort, jsonify, render_template
+import re
 
 import firebase_admin
 from firebase_admin import credentials, auth
@@ -9,11 +10,12 @@ from firebase_admin import firestore
 from Entities.User import User
 
 app = Flask(__name__)
-#5468
-#5468Nuoalekso
+
 cred = credentials.Certificate("static/pyproject-63c10-firebase-adminsdk-98zc9-532150f44b.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+
+GMAIL_REGEX = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\bgmail\b[.]\bcom\b$', re.IGNORECASE)
 
 
 # User REST API
@@ -45,7 +47,7 @@ def login_firebase():
     if not bcrypt.checkpw(password.encode('utf-8'), user_doc.to_dict()['password_hash'].encode('utf-8')):
         return jsonify({'error': 'Invalid credentials'}), 401
 
-    return jsonify({'message': 'Login successful'})
+    return jsonify({'message': 'Login successful'}), 200
 
 @app.route('/register', methods=['POST'])
 def insert_user_firebase():
@@ -54,12 +56,16 @@ def insert_user_firebase():
     password = request.form.get('password')
     admin = request.form.get('admin', False)
 
+    # Check if the email provided is a valid Gmail address
+    if not GMAIL_REGEX.match(email):
+        return jsonify({'error': 'Invalid email format, must be a Gmail address'}), 400
+
     # Check if username or email already exists
     user_query = db.collection(u'users').where(u'username', u'==', username).limit(1).get()
     email_query = db.collection(u'users').where(u'email', u'==', email).limit(1).get()
 
     if user_query or email_query:
-        abort(409, 'Username or email already exists')
+        return jsonify({'error': 'Username or email already exists'}), 409
 
     # Hash the password
     password_hash = User.hash_password(password)
@@ -75,7 +81,7 @@ def insert_user_firebase():
     # Add user to Firestore
     db.collection(u'users').add(user_data)
 
-    return 'User inserted successfully'
+    return jsonify({'message': 'User inserted successfully'}), 200
 
 
 # Product REST API
