@@ -46,7 +46,7 @@ class TestApp(unittest.TestCase):
         response = self.app.get('/get-picture-url')
         self.assertEqual(response.status_code, 200)
 
-    @patch('your_flask_file.request')
+    @patch('app.request')
     def test_upload_picture(self, mock_request):
         mock_request.get_json = Mock(return_value={'picture': base64.b64encode(b'test').decode()})
         with patch('builtins.open', new=mock_open()) as m:
