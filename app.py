@@ -88,12 +88,43 @@ def insert_user_firebase():
 
 @app.route('/all-products', methods=['GET'])
 def get_products():
-    return 'Get products'
+    products = db.collection(u'products').stream()
+    product_list = [{doc.id: doc.to_dict()} for doc in products]
+    return jsonify(product_list), 200
 
 
+# Endpoint to insert a new product
 @app.route('/insert-product', methods=['POST'])
 def insert_product():
-    return 'Insert product'
+    data = request.get_json()  # Assuming you send product data as a JSON payload
+    if not data:
+        return jsonify({'error': 'Missing product data'}), 400
+
+    # Validate and extract product fields
+    name = data.get('name')
+    specifications = data.get('specifications')
+    description = data.get('description')
+    ai_description = data.get('ai_description')
+    reviews = data.get('reviews', [])
+    pictures = data.get('pictures', [])
+
+    if not name or not specifications or not description:
+        return jsonify({'error': 'Incomplete product data'}), 400
+
+    # Create product document
+    product_data = {
+        u'name': name,
+        u'specifications': specifications,
+        u'description': description,
+        u'ai_description': ai_description,
+        u'reviews': reviews,
+        u'pictures': pictures
+    }
+
+    # Add product to Firestore
+    db.collection(u'products').add(product_data)
+
+    return jsonify({'message': 'Product inserted successfully'}), 200
 
 
 # @app.route('/upload-image', methods=['POST'])
