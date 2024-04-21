@@ -4,6 +4,7 @@ import bcrypt
 from flask import Flask, request, abort, jsonify, render_template
 import re
 
+import pyrebase
 import firebase_admin
 from firebase_admin import credentials, auth
 from firebase_admin import firestore
@@ -12,9 +13,22 @@ from Entities.User import User
 
 app = Flask(__name__)
 
+firebaseConfig = {
+  "apiKey": "AIzaSyB0aygWno2tPuSqtAe3NgXB9FiJzeZwZVw",
+  "authDomain": "pyproject-63c10.firebaseapp.com",
+  "databaseURL": "https://pyproject-63c10-default-rtdb.europe-west1.firebasedatabase.app",
+  "projectId": "pyproject-63c10",
+  "storageBucket": "pyproject-63c10.appspot.com",
+  "messagingSenderId": "870914259034",
+  "appId": "1:870914259034:web:eee646838d364d13f04063",
+  "measurementId": "G-DH3FMNZMZ9"
+}
+
 cred = credentials.Certificate("static/pyproject-63c10-firebase-adminsdk-98zc9-532150f44b.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+firebase = pyrebase.initialize_app(firebaseConfig)
+
 
 GMAIL_REGEX = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\bgmail\b[.]\bcom\b$', re.IGNORECASE)
 
