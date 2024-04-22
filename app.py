@@ -14,20 +14,15 @@ from Entities.User import User
 app = Flask(__name__)
 
 firebaseConfig = {
-  "apiKey": "AIzaSyB0aygWno2tPuSqtAe3NgXB9FiJzeZwZVw",
-  "authDomain": "pyproject-63c10.firebaseapp.com",
-  "databaseURL": "https://pyproject-63c10-default-rtdb.europe-west1.firebasedatabase.app",
-  "projectId": "pyproject-63c10",
-  "storageBucket": "pyproject-63c10.appspot.com",
-  "messagingSenderId": "870914259034",
-  "appId": "1:870914259034:web:eee646838d364d13f04063",
-  "measurementId": "G-DH3FMNZMZ9"
+
 }
 
 cred = credentials.Certificate("static/pyproject-63c10-firebase-adminsdk-98zc9-532150f44b.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
+
 firebase = pyrebase.initialize_app(firebaseConfig)
+storage = firebase.storage()
 
 
 GMAIL_REGEX = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\bgmail\b[.]\bcom\b$', re.IGNORECASE)
@@ -163,39 +158,23 @@ def upload_picture():
 
     picture_data = data['picture']
     try:
-        # Assume picture_data is a base64 encoded string without 'data:image/png;base64,' prefix
+        # Assume picture_data is a base64 encoded string
+        # This decodes the string but does not write to a file
         image_data = base64.b64decode(picture_data)
     except base64.binascii.Error as e:
         return jsonify({'error': 'Invalid base64 data'}), 400
 
-    # Here you would typically store this data in a more permanent storage solution
-    # For demo purposes, we'll save it to a file (this is not typically recommended for prod)
-    with open('static/uploaded_image.png', 'wb') as f:
-        f.write(image_data)
+    # Create a unique file path or name for your image
+    filename = "uploaded_image.png"  # Modify this to generate a unique name if needed
 
-    return jsonify({'message': 'Picture uploaded successfully'}), 200
+    # Save the image to Firebase Storage
+    storage.child("images/" + filename).put(image_data)
 
-#
-# @app.route('/display-images')
-# def display_images():
-#     images = get_all_images()
-#     return render_template('display_images.html', images=images)
+    # Get the image URL
+    image_url = storage.child("images/" + filename).get_url(None)
 
+    return jsonify({'message': 'Picture uploaded successfully', 'image_url': image_url}), 200
 
-# Methods
-
-# def save_image(image):
-#     fs = gridfs.GridFS(entities_db)
-#     image_id = fs.put(image)
-#     return image_id
-#
-#
-# def get_all_images():
-#     fs = gridfs.GridFS(entities_db)
-#     images = []
-#     for image in fs.find():
-#         images.append(base64.b64encode(image.read()).decode('utf-8'))
-#     return images
 
 
 def get_all_products():
