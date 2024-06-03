@@ -2,9 +2,9 @@ name: CI Pipeline for Feature branch
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feature" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "feature" ]
 
 permissions:
   contents: read
